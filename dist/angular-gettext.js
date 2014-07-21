@@ -75,7 +75,8 @@ angular.module('gettext').directive('translate', [
   '$interpolate',
   '$parse',
   '$compile',
-  function (gettextCatalog, $interpolate, $parse, $compile) {
+  '$window',
+  function (gettextCatalog, $interpolate, $parse, $compile, $window) {
     /**
      * Trim fallback for old browsers(instead of jQuery)
      * Based on AngularJS-v1.2.2 (angular.js#620)
@@ -132,7 +133,13 @@ angular.module('gettext').directive('translate', [
               if (prev === interpolated) {
                 return;  // Skip DOM change.
               }
-              clone.html(interpolated);
+              // There is a defect in IE 9/10/11 that will not allow
+              // you to enter text into a parentless node.
+              if ($window.navigator.userAgent.match(/MSIE|Trident/)) {
+                clone.empty().append(interpolated);
+              } else {
+                clone.html(interpolated);
+              }
               if (attrs.translateCompile !== undefined) {
                 $compile(clone.contents())($scope);
               }
